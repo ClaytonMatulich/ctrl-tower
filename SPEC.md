@@ -29,9 +29,11 @@
 ## 1. Project Overview
 
 ### Vision
+
 **ctrl-tower** is a retro-style terminal user interface (TUI) application that serves as a comprehensive flight information hub. Inspired by classic split-flap airport departure boards and amber CRT monitors, it provides real-time flight tracking, arrivals/departures information, and live aircraft position visualization—all in a stunning terminal interface.
 
 ### Core Objectives
+
 - **Retro Aesthetic:** Amber/orange CRT display with split-flap mechanical board styling
 - **Real-Time Data:** Live flight tracking and airport schedule information
 - **Visual Excellence:** Complex ASCII art visualizations and smooth 60fps animations
@@ -39,6 +41,7 @@
 - **Performance:** Optimized for smooth rendering and minimal API usage
 
 ### Default Configuration
+
 - **Default Airport:** SFO (San Francisco International Airport)
 - **Regional Map Radius:** 300km from selected airport
 - **Target Frame Rate:** 60fps minimum
@@ -48,17 +51,19 @@
 ## 2. Tech Stack
 
 ### Core Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Bun** | 1.1.26+ | Runtime & package manager |
-| **TypeScript** | 5.0+ | Type-safe development |
-| **@opentui/react** | 0.1.68+ | React reconciler for TUI |
-| **@opentui/core** | 0.1.68+ | Core TUI primitives |
-| **React** | 19.2.3+ | UI framework |
-| **Zod** | 4.3.4+ | Runtime type validation |
-| **date-fns** | 4.1.0+ | Date/time formatting |
+
+| Technology         | Version | Purpose                   |
+| ------------------ | ------- | ------------------------- |
+| **Bun**            | 1.1.26+ | Runtime & package manager |
+| **TypeScript**     | 5.0+    | Type-safe development     |
+| **@opentui/react** | 0.1.68+ | React reconciler for TUI  |
+| **@opentui/core**  | 0.1.68+ | Core TUI primitives       |
+| **React**          | 19.2.3+ | UI framework              |
+| **Zod**            | 4.3.4+  | Runtime type validation   |
+| **date-fns**       | 4.1.0+  | Date/time formatting      |
 
 ### Prerequisites
+
 - Zig compiler (required for building @opentui packages)
 - Bun installed globally
 - API keys:
@@ -66,6 +71,7 @@
   - OpenSky Network (optional authentication for higher rate limits)
 
 ### Type Safety Philosophy
+
 - **Strict TypeScript:** All compiler strictness flags enabled
 - **Runtime Validation:** Zod schemas for API responses
 - **No `any` types:** Explicit types throughout
@@ -76,6 +82,7 @@
 ## 3. API Integration Strategy
 
 ### Overview
+
 ctrl-tower uses a **dual-API composition** strategy to maximize free tier benefits and data coverage:
 
 1. **AirLabs API:** Airport schedules, flight status, static data (airlines, airports)
@@ -86,6 +93,7 @@ ctrl-tower uses a **dual-API composition** strategy to maximize free tier benefi
 **Purpose:** Primary source for airport arrivals/departures and flight schedules
 
 **Free Tier Limits:**
+
 - 10,000 requests/month
 - No authentication beyond API key
 - JSON/XML/CSV response formats
@@ -93,11 +101,13 @@ ctrl-tower uses a **dual-API composition** strategy to maximize free tier benefi
 **Key Endpoints:**
 
 #### `/schedules` - Live Airport Schedules
+
 ```http
 GET https://airlabs.co/api/v9/schedules?dep_iata=SFO&api_key=XXX
 ```
 
 **Query Parameters:**
+
 - `dep_iata` - Departure airport IATA code (for departures board)
 - `arr_iata` - Arrival airport IATA code (for arrivals board)
 - `airline_iata` - Filter by airline (optional)
@@ -105,6 +115,7 @@ GET https://airlabs.co/api/v9/schedules?dep_iata=SFO&api_key=XXX
 - `offset` - Pagination offset
 
 **Response Fields:**
+
 ```typescript
 {
   airline_iata: string;           // "AA"
@@ -128,6 +139,7 @@ GET https://airlabs.co/api/v9/schedules?dep_iata=SFO&api_key=XXX
 ```
 
 #### `/flights` - Real-Time Flight Tracking (Optional)
+
 Can be used to enrich OpenSky data with flight numbers and destinations.
 
 ```http
@@ -135,14 +147,17 @@ GET https://airlabs.co/api/v9/flights?bbox=-125,35,-120,40&api_key=XXX
 ```
 
 **Query Parameters:**
+
 - `bbox` - Bounding box (SW-Lat, SW-Lng, NE-Lat, NE-Lng)
 - `dep_iata` / `arr_iata` - Filter by airport
 - `flight_iata` - Specific flight lookup
 
 #### `/airports`, `/airlines`, `/cities` - Static Databases
+
 For airport info, airline details, and city lookups. Fetch once and cache.
 
 **Rate Limiting Strategy:**
+
 - **Schedules:** 5-minute refresh interval (576 requests/day = ~17,280/month)
 - **Caching:** Aggressive 300-second TTL to stay under 10k/month limit
 - **Fallback:** Increase cache TTL to 10 minutes if approaching limit
@@ -153,6 +168,7 @@ For airport info, airline details, and city lookups. Fetch once and cache.
 **Purpose:** Primary source for live aircraft positions and flight physics
 
 **Free Tier:**
+
 - Unlimited requests (anonymous)
 - Higher rate limits with free registration
 - Updates every 10 seconds
@@ -160,16 +176,19 @@ For airport info, airline details, and city lookups. Fetch once and cache.
 **Key Endpoint:**
 
 #### `/states/all` - All Aircraft State Vectors
+
 ```http
 GET https://opensky-network.org/api/states/all
 ```
 
 **Optional Query Parameters:**
+
 - `time` - Unix timestamp (defaults to now)
 - `icao24` - Specific aircraft hex address
 - `lamin`, `lomin`, `lamax`, `lomax` - Bounding box
 
 **Response Format:**
+
 ```javascript
 {
   "time": 1626153069,
@@ -199,6 +218,7 @@ GET https://opensky-network.org/api/states/all
 ```
 
 **Data Mapping:**
+
 - Position: `[5]` = longitude, `[6]` = latitude
 - Altitude: `[7]` = barometric altitude (meters)
 - Speed: `[9]` = velocity (m/s → multiply by 3.6 for km/h)
@@ -206,6 +226,7 @@ GET https://opensky-network.org/api/states/all
 - Status: `[8]` = on_ground (boolean)
 
 **Update Strategy:**
+
 - Poll every 10-15 seconds for live map
 - Filter by bounding box for regional mode
 - No authentication required (optional for higher limits)
@@ -213,6 +234,7 @@ GET https://opensky-network.org/api/states/all
 ### 3.3 Data Correlation Strategy
 
 **Enriching OpenSky with AirLabs:**
+
 - Match aircraft by `callsign` or `icao24` between APIs
 - Display flight number, origin/destination from AirLabs on map
 - Cache correlations to reduce API calls
@@ -321,7 +343,6 @@ ctrl-tower/
 │
 ├── assets/
 │   └── ascii/
-│       ├── logo.txt                 # Splash screen logo
 │       ├── world-map-simple.txt     # ASCII world map template
 │       └── aircraft-icons.txt       # Aircraft symbols
 │
@@ -355,6 +376,7 @@ App
 **Approach:** React Context + Hooks (no external state library)
 
 **Global State:**
+
 - Current screen (title vs main app)
 - Current tab index
 - Selected airport code
@@ -362,6 +384,7 @@ App
 - Theme/CRT effects settings
 
 **Local State:**
+
 - Arrivals/departures data (from useSchedules hook)
 - Aircraft positions (from useAircraftPositions hook)
 - Selected flight/aircraft
@@ -370,26 +393,28 @@ App
 ### 4.4 Module Boundaries
 
 **Principles:**
+
 - **Loose Coupling:** Components depend on abstractions (hooks), not concrete implementations
 - **Single Responsibility:** Each module has one clear purpose
 - **Dependency Injection:** API clients are injectable for testing
 - **Type Safety:** All boundaries have explicit TypeScript interfaces
 
 **Example:**
+
 ```typescript
 // ❌ BAD: Tight coupling
-import { fetchSchedules } from './services/api/airlabs';
+import { fetchSchedules } from "./services/api/airlabs";
 
 function ArrivalsBoard() {
-  const data = await fetchSchedules('SFO');
+  const data = await fetchSchedules("SFO");
   // ...
 }
 
 // ✅ GOOD: Loose coupling via hook abstraction
-import { useSchedules } from './hooks/useSchedules';
+import { useSchedules } from "./hooks/useSchedules";
 
 function ArrivalsBoard() {
-  const { arrivals, loading, error } = useSchedules('SFO', 'arrivals');
+  const { arrivals, loading, error } = useSchedules("SFO", "arrivals");
   // ...
 }
 ```
@@ -403,33 +428,33 @@ function ArrivalsBoard() {
 ```typescript
 export const theme = {
   // Primary amber/orange tones
-  primary: '#FF8C00',         // Dark Orange
-  secondary: '#FFA500',       // Orange
-  accent: '#FFD700',          // Gold (highlights)
-  
+  primary: "#FF8C00", // Dark Orange
+  secondary: "#FFA500", // Orange
+  accent: "#FFD700", // Gold (highlights)
+
   // Background (dark for CRT phosphor glow)
-  background: '#0A0A0A',      // Almost black
-  backgroundAlt: '#1A1A1A',   // Slightly lighter
-  
+  background: "#0A0A0A", // Almost black
+  backgroundAlt: "#1A1A1A", // Slightly lighter
+
   // Text colors
-  text: '#FFA500',            // Orange text
-  textDim: '#CC7000',         // Dimmed orange
-  textBright: '#FFBB33',      // Bright orange
-  
+  text: "#FFA500", // Orange text
+  textDim: "#CC7000", // Dimmed orange
+  textBright: "#FFBB33", // Bright orange
+
   // Status colors (amber-toned)
-  success: '#FFD700',         // Gold
-  warning: '#FF6600',         // Dark orange
-  error: '#FF4500',           // Orange red
-  info: '#FFA500',            // Standard orange
-  
+  success: "#FFD700", // Gold
+  warning: "#FF6600", // Dark orange
+  error: "#FF4500", // Orange red
+  info: "#FFA500", // Standard orange
+
   // Split-flap board
-  flapBackground: '#2A2A2A',  // Dark gray
-  flapText: '#FFA500',        // Orange
-  flapBorder: '#4A4A2A',      // Olive-gray
-  
+  flapBackground: "#2A2A2A", // Dark gray
+  flapText: "#FFA500", // Orange
+  flapBorder: "#4A4A2A", // Olive-gray
+
   // CRT effects
-  scanLine: '#000000',        // Black with opacity
-  glow: '#FF8C00',            // Orange glow
+  scanLine: "#000000", // Black with opacity
+  glow: "#FF8C00", // Orange glow
 };
 ```
 
@@ -449,16 +474,16 @@ export const layout = {
   minHeight: 24,
   idealWidth: 120,
   idealHeight: 40,
-  
+
   // Component spacing
   padding: 1,
   margin: 1,
   borderWidth: 1,
-  
+
   // Tab bar
   tabBarHeight: 3,
   tabWidth: 15,
-  
+
   // Header/Footer
   headerHeight: 3,
   footerHeight: 2,
@@ -470,12 +495,14 @@ export const layout = {
 **Target:** 60fps minimum
 
 **Techniques:**
+
 - **Interpolation:** Smooth position transitions for aircraft
 - **Easing:** Ease-in-out for split-flap flips
 - **Frame Budgets:** Max 16.67ms per frame (60fps)
 - **Requestable Animation Frames:** Use RAF-equivalent for TUI
 
 **Split-Flap Animation:**
+
 ```
 Frame 1: Original character
 Frame 2: Half-flip (top character visible)
@@ -485,6 +512,7 @@ Frame 5: New character
 ```
 
 **CRT Effects:**
+
 - Scan lines: Horizontal lines with 50% opacity, moving top→bottom
 - Phosphor glow: Character bloom effect (duplicate char with offset)
 - Flicker: Occasional brightness variation (5% chance per frame)
@@ -494,18 +522,21 @@ Frame 5: New character
 ## 6. Features & MVP Scope
 
 ### Phase 1: Core Infrastructure + Title Screen ✅
+
 **Duration:** Week 1
 
 **Deliverables:**
+
 - [x] Project scaffold (Bun + TypeScript + OpenTUI)
 - [x] SPEC.md creation
 - [x] Title screen with:
-  - Retro airport logo (ASCII art in double-bordered box)
+  - Retro airport logo (ASCII art)
   - Keyboard navigation hint
   - Press any key to continue
   - Amber CRT color scheme
 
 **Visual Reference:**
+
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
@@ -533,9 +564,11 @@ Frame 5: New character
 ```
 
 ### Phase 2: Arrivals & Departures Boards
+
 **Duration:** Week 2-3
 
 **Features:**
+
 - AirLabs `/schedules` API integration
 - Split-flap mechanical board aesthetic
 - Real-time updates (5-minute intervals)
@@ -547,6 +580,7 @@ Frame 5: New character
   - Cancelled (strikethrough)
 
 **Board Layout:**
+
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║  ARRIVALS - SFO (San Francisco International)      19:45:32 UTC   ║
@@ -563,9 +597,11 @@ Frame 5: New character
 ```
 
 ### Phase 3: Live Flight Map
+
 **Duration:** Week 3-4
 
 **Features:**
+
 - ASCII world map rendering (simple coastlines)
 - OpenSky API integration
 - Global mode: Show all worldwide flights
@@ -577,6 +613,7 @@ Frame 5: New character
 - Selected aircraft detail panel
 
 **Map Layout (Regional Mode):**
+
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║  LIVE MAP - Regional (300km radius from SFO)                       ║
@@ -602,9 +639,11 @@ Frame 5: New character
 ```
 
 ### Phase 4: Polish & Effects
+
 **Duration:** Week 5
 
 **Features:**
+
 - CRT scan line animation
 - Phosphor glow effect
 - Split-flap flip animation refinement
@@ -619,18 +658,18 @@ Frame 5: New character
 
 ### 7.1 Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Switch tabs forward |
-| `Shift+Tab` | Switch tabs backward |
-| `1-4` | Jump to tab (1=Arrivals, 2=Departures, 3=Map, 4=Help) |
-| `↑/↓` | Navigate within lists |
-| `Enter` | Select flight/aircraft |
-| `Esc` | Go back / close detail |
-| `M` | Toggle map mode (Global ↔ Regional) |
-| `R` | Refresh data manually |
-| `?` | Show help overlay |
-| `Q` | Quit application |
+| Key         | Action                                                |
+| ----------- | ----------------------------------------------------- |
+| `Tab`       | Switch tabs forward                                   |
+| `Shift+Tab` | Switch tabs backward                                  |
+| `1-4`       | Jump to tab (1=Arrivals, 2=Departures, 3=Map, 4=Help) |
+| `↑/↓`       | Navigate within lists                                 |
+| `Enter`     | Select flight/aircraft                                |
+| `Esc`       | Go back / close detail                                |
+| `M`         | Toggle map mode (Global ↔ Regional)                   |
+| `R`         | Refresh data manually                                 |
+| `?`         | Show help overlay                                     |
+| `Q`         | Quit application                                      |
 
 ### 7.2 Tab Structure
 
@@ -643,17 +682,20 @@ Frame 5: New character
 ### 7.3 User Flows
 
 **Startup:**
+
 1. Splash screen (3 seconds)
 2. Load to Arrivals tab
 3. Fetch initial data for SFO
 
 **Viewing Flights:**
+
 1. Navigate to Arrivals/Departures
 2. Use arrow keys to highlight flight
 3. Press Enter for details
 4. Press Esc to return
 
 **Exploring Map:**
+
 1. Navigate to Live Map tab
 2. Press `M` to toggle Global/Regional
 3. Click aircraft or use arrows to select
@@ -700,14 +742,14 @@ export interface Flight {
   status: FlightStatus;
 }
 
-export type FlightStatus = 
-  | 'scheduled' 
-  | 'boarding' 
-  | 'departed' 
-  | 'active' 
-  | 'landed' 
-  | 'cancelled' 
-  | 'diverted';
+export type FlightStatus =
+  | "scheduled"
+  | "boarding"
+  | "departed"
+  | "active"
+  | "landed"
+  | "cancelled"
+  | "diverted";
 
 // types/aircraft.ts
 export interface AircraftPosition {
@@ -721,7 +763,7 @@ export interface AircraftPosition {
   verticalRate: number; // m/s
   onGround: boolean;
   lastUpdate: Date;
-  
+
   // Optional enrichment from AirLabs
   flightNumber?: string;
   origin?: string;
@@ -745,7 +787,7 @@ export interface Airport {
 
 ```typescript
 // types/api/airlabs.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const AirLabsScheduleSchema = z.object({
   airline_iata: z.string(),
@@ -767,7 +809,7 @@ export const AirLabsScheduleSchema = z.object({
   arr_time: z.string(),
   arr_estimated: z.string().optional(),
   arr_actual: z.string().optional(),
-  status: z.enum(['scheduled', 'active', 'landed', 'cancelled']),
+  status: z.enum(["scheduled", "active", "landed", "cancelled"]),
   dep_delayed: z.number().optional(),
   arr_delayed: z.number().optional(),
 });
@@ -776,23 +818,23 @@ export type AirLabsSchedule = z.infer<typeof AirLabsScheduleSchema>;
 
 // types/api/opensky.ts
 export const OpenSkyStateSchema = z.tuple([
-  z.string(),           // icao24
-  z.string().nullable(),// callsign
-  z.string(),           // origin_country
-  z.number().nullable(),// time_position
-  z.number(),           // last_contact
-  z.number().nullable(),// longitude
-  z.number().nullable(),// latitude
-  z.number().nullable(),// baro_altitude
-  z.boolean(),          // on_ground
-  z.number().nullable(),// velocity
-  z.number().nullable(),// true_track
-  z.number().nullable(),// vertical_rate
+  z.string(), // icao24
+  z.string().nullable(), // callsign
+  z.string(), // origin_country
+  z.number().nullable(), // time_position
+  z.number(), // last_contact
+  z.number().nullable(), // longitude
+  z.number().nullable(), // latitude
+  z.number().nullable(), // baro_altitude
+  z.boolean(), // on_ground
+  z.number().nullable(), // velocity
+  z.number().nullable(), // true_track
+  z.number().nullable(), // vertical_rate
   z.array(z.number()).nullable(), // sensors
-  z.number().nullable(),// geo_altitude
-  z.string().nullable(),// squawk
-  z.boolean(),          // spi
-  z.number(),           // position_source
+  z.number().nullable(), // geo_altitude
+  z.string().nullable(), // squawk
+  z.boolean(), // spi
+  z.number(), // position_source
 ]);
 
 export type OpenSkyState = z.infer<typeof OpenSkyStateSchema>;
@@ -805,6 +847,7 @@ export type OpenSkyState = z.infer<typeof OpenSkyStateSchema>;
 ### 9.1 Environment Variables
 
 **`.env.example`:**
+
 ```bash
 # AirLabs API
 AIRLABS_API_KEY=your_api_key_here
@@ -841,41 +884,42 @@ CACHE_TTL_STATIC=86400               # 24 hours
 export const config = {
   api: {
     airlabs: {
-      baseUrl: 'https://airlabs.co/api/v9',
-      key: process.env.AIRLABS_API_KEY || '',
+      baseUrl: "https://airlabs.co/api/v9",
+      key: process.env.AIRLABS_API_KEY || "",
       timeout: 10000, // 10 seconds
     },
     opensky: {
-      baseUrl: 'https://opensky-network.org/api',
+      baseUrl: "https://opensky-network.org/api",
       username: process.env.OPENSKY_USERNAME,
       password: process.env.OPENSKY_PASSWORD,
       timeout: 10000,
     },
   },
-  
+
   airport: {
-    default: process.env.DEFAULT_AIRPORT || 'SFO',
+    default: process.env.DEFAULT_AIRPORT || "SFO",
   },
-  
+
   refresh: {
-    schedules: parseInt(process.env.SCHEDULES_REFRESH_INTERVAL || '300', 10),
-    aircraft: parseInt(process.env.AIRCRAFT_REFRESH_INTERVAL || '10', 10),
+    schedules: parseInt(process.env.SCHEDULES_REFRESH_INTERVAL || "300", 10),
+    aircraft: parseInt(process.env.AIRCRAFT_REFRESH_INTERVAL || "10", 10),
   },
-  
+
   map: {
-    defaultMode: process.env.MAP_VIEW_MODE === 'regional' ? 'regional' : 'global',
-    regionalRadius: parseInt(process.env.REGIONAL_MAP_RADIUS || '300', 10),
+    defaultMode:
+      process.env.MAP_VIEW_MODE === "regional" ? "regional" : "global",
+    regionalRadius: parseInt(process.env.REGIONAL_MAP_RADIUS || "300", 10),
   },
-  
+
   performance: {
-    targetFPS: parseInt(process.env.TARGET_FPS || '60', 10),
-    enableCRTEffects: process.env.ENABLE_CRT_EFFECTS !== 'false',
-    enableAnimations: process.env.ENABLE_ANIMATIONS !== 'false',
+    targetFPS: parseInt(process.env.TARGET_FPS || "60", 10),
+    enableCRTEffects: process.env.ENABLE_CRT_EFFECTS !== "false",
+    enableAnimations: process.env.ENABLE_ANIMATIONS !== "false",
   },
-  
+
   cache: {
-    ttlSchedules: parseInt(process.env.CACHE_TTL_SCHEDULES || '300', 10),
-    ttlStatic: parseInt(process.env.CACHE_TTL_STATIC || '86400', 10),
+    ttlSchedules: parseInt(process.env.CACHE_TTL_SCHEDULES || "300", 10),
+    ttlStatic: parseInt(process.env.CACHE_TTL_STATIC || "86400", 10),
   },
 } as const;
 ```
@@ -885,6 +929,7 @@ export const config = {
 ## 10. Development Roadmap
 
 ### Week 1: Foundation (Jan 3-10)
+
 - [x] Project scaffold
 - [x] SPEC.md creation
 - [x] Title screen with keyboard navigation
@@ -892,6 +937,7 @@ export const config = {
 - [x] Theme system implementation
 
 ### Week 2: Data Integration (Jan 10-17)
+
 - [ ] AirLabs API client
 - [ ] OpenSky API client
 - [ ] Data caching layer
@@ -899,6 +945,7 @@ export const config = {
 - [ ] Hook abstractions (useSchedules, useAircraftPositions)
 
 ### Week 3: Arrivals/Departures (Jan 17-24)
+
 - [ ] ArrivalsBoard component
 - [ ] DeparturesBoard component
 - [ ] Flight row components with split-flap animation
@@ -906,6 +953,7 @@ export const config = {
 - [ ] Real-time refresh logic
 
 ### Week 4: Live Map (Jan 24-31)
+
 - [ ] ASCII world map generation
 - [ ] Mercator projection utilities
 - [ ] GlobalMap component
@@ -915,6 +963,7 @@ export const config = {
 - [ ] Mode toggle implementation
 
 ### Week 5: Polish (Jan 31-Feb 7)
+
 - [ ] CRT effects (scan lines, glow)
 - [ ] Performance optimization
 - [ ] Error handling
@@ -936,16 +985,19 @@ export const config = {
 ### 11.2 Optimization Strategies
 
 **Rendering:**
+
 - Virtual scrolling for long flight lists (>100 items)
 - Debounce keyboard input (50ms)
 - Throttle map updates (10fps for background, 60fps for foreground)
 
 **API:**
+
 - Aggressive caching (5-minute TTL)
 - Request deduplication
 - Batch static data fetches on startup
 
 **Animations:**
+
 - Use requestAnimationFrame equivalent
 - Skip frames if behind schedule
 - Disable effects on low-end hardware (auto-detect)
@@ -955,18 +1007,21 @@ export const config = {
 ## 12. Testing Strategy
 
 ### 12.1 Unit Tests
+
 - API clients (mocked responses)
 - Data mappers (API → domain)
 - Utility functions (formatting, projections)
 - Hooks (with React Testing Library)
 
 ### 12.2 Integration Tests
+
 - API → Cache → Component flow
 - Keyboard navigation
 - Tab switching
 - Data refresh cycles
 
 ### 12.3 Manual Testing
+
 - Visual regression (screenshots)
 - Performance profiling (bun --inspect)
 - API rate limit testing
@@ -977,6 +1032,7 @@ export const config = {
 ## 13. Known Limitations
 
 ### MVP Scope
+
 - No historical flight data (only current/future)
 - No push notifications or alerts
 - No multi-airport comparison
@@ -984,6 +1040,7 @@ export const config = {
 - No flight search (manual tab navigation only)
 
 ### API Constraints
+
 - **AirLabs Free Tier:** 10,000 requests/month
   - Limits refresh frequency to 5-10 minutes
   - No HTTPS on free tier (HTTP only)
@@ -991,6 +1048,7 @@ export const config = {
   - Rate limits on anonymous access
 
 ### Technical
+
 - **Terminal Size:** Minimum 80x24 required
 - **Color Support:** Requires 256-color terminal
 - **Platform:** Optimized for macOS/Linux (Windows may have rendering issues)
@@ -999,7 +1057,7 @@ export const config = {
 
 ## Future Enhancements (Post-MVP)
 
-*These are intentionally minimal per user request to focus on MVP:*
+_These are intentionally minimal per user request to focus on MVP:_
 
 - Flight search functionality
 - Multi-airport watchlist
@@ -1012,4 +1070,4 @@ export const config = {
 
 **End of Specification**
 
-*This document is actively maintained and updated as the project evolves.*
+_This document is actively maintained and updated as the project evolves._
