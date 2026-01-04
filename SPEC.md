@@ -237,13 +237,14 @@ ctrl-tower/
 │
 ├── src/
 │   ├── index.tsx                    # Entry point, renders App
-│   ├── app.tsx                      # Root app component with tab state
+│   ├── app.tsx                      # Root app component with navigation state
 │   │
 │   ├── components/
-│   │   ├── splash/
-│   │   │   ├── SplashScreen.tsx     # Main splash component
-│   │   │   ├── BootSequence.tsx     # Terminal boot animation
-│   │   │   └── LogoReveal.tsx       # Animated logo
+│   │   ├── title/
+│   │   │   └── TitleScreen.tsx      # Title screen with animated intro
+│   │   │
+│   │   ├── main/
+│   │   │   └── MainApp.tsx          # Main application with tab navigation
 │   │   │
 │   │   ├── layout/
 │   │   │   ├── Header.tsx           # Top bar (time, airport)
@@ -333,7 +334,7 @@ ctrl-tower/
 
 ```
 App
-├── SplashScreen (on startup)
+├── TitleScreen (on startup, press any key to continue)
 └── MainApp
     ├── Header
     ├── TabBar
@@ -354,6 +355,7 @@ App
 **Approach:** React Context + Hooks (no external state library)
 
 **Global State:**
+- Current screen (title vs main app)
 - Current tab index
 - Selected airport code
 - Map view mode (global/regional)
@@ -491,43 +493,43 @@ Frame 5: New character
 
 ## 6. Features & MVP Scope
 
-### Phase 1: Core Infrastructure + Splash Screen ✅
+### Phase 1: Core Infrastructure + Title Screen ✅
 **Duration:** Week 1
 
 **Deliverables:**
 - [x] Project scaffold (Bun + TypeScript + OpenTUI)
 - [x] SPEC.md creation
-- [ ] Killer splash screen with:
-  - Retro airport logo (ASCII art)
-  - Boot sequence animation
-  - CRT scan line effects
-  - Character-by-character reveal
-  - Phosphor glow simulation
+- [x] Title screen with:
+  - Retro airport logo (ASCII art in double-bordered box)
+  - Keyboard navigation hint
+  - Press any key to continue
+  - Amber CRT color scheme
 
 **Visual Reference:**
 ```
-╔══════════════════════════════════════════════════════════╗
-║                                                          ║
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
 ║        ░█████╗░████████╗██████╗░██╗░░░░░              ║
 ║        ██╔══██╗╚══██╔══╝██╔══██╗██║░░░░░              ║
 ║        ██║░░╚═╝░░░██║░░░██████╔╝██║░░░░░              ║
 ║        ██║░░██╗░░░██║░░░██╔══██╗██║░░░░░              ║
 ║        ╚█████╔╝░░░██║░░░██║░░██║███████╗              ║
 ║        ░╚════╝░░░░╚═╝░░░╚═╝░░╚═╝╚══════╝              ║
-║                                                          ║
+║                                                               ║
 ║       ████████╗░█████╗░░██╗░░░░░░░██╗███████╗██████╗   ║
 ║       ╚══██╔══╝██╔══██╗░██║░░██╗░░██║██╔════╝██╔══██╗  ║
 ║       ░░░██║░░░██║░░██║░╚██╗████╗██╔╝█████╗░░██████╔╝  ║
 ║       ░░░██║░░░██║░░██║░░████╔═████║░██╔══╝░░██╔══██╗  ║
 ║       ░░░██║░░░╚█████╔╝░░╚██╔╝░╚██╔╝░███████╗██║░░██║  ║
 ║       ░░░╚═╝░░░░╚════╝░░░░╚═╝░░░╚═╝░░╚══════╝╚═╝░░╚═╝  ║
-║                                                          ║
+║                                                               ║
 ║            FLIGHT INFORMATION MANAGEMENT SYSTEM          ║
 ║                    Version 0.1.0                         ║
-║                                                          ║
-║                  [ INITIALIZING... ]                     ║
-║                                                          ║
-╚══════════════════════════════════════════════════════════╝
+║                                                               ║
+║                  Press any key to continue...             ║
+║                                                               ║
+║      [Tab] Navigate  [1-4] Switch Tabs  [Q] Quit  [?] Help   ║
+╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ### Phase 2: Arrivals & Departures Boards
@@ -885,9 +887,9 @@ export const config = {
 ### Week 1: Foundation (Jan 3-10)
 - [x] Project scaffold
 - [x] SPEC.md creation
-- [ ] Splash screen with animations
-- [ ] Basic app shell with tab navigation
-- [ ] Theme system implementation
+- [x] Title screen with keyboard navigation
+- [x] Basic app shell with tab navigation
+- [x] Theme system implementation
 
 ### Week 2: Data Integration (Jan 10-17)
 - [ ] AirLabs API client
