@@ -9,14 +9,6 @@
     "start": "bun run src/index.tsx",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "tui",
-    "flight-tracker",
-    "aviation",
-    "terminal",
-    "opentui"
-  ],
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "@opentui/core": "^0.1.68",
