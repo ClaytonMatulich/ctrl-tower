@@ -1,0 +1,18 @@
+# Simple ASCII World Map Template
+# This is a placeholder - will be generated programmatically
+# Focusing on clear flight paths rather than detailed geography
+
+                            
+               ░░░          
+          ░░░░░░░░░░░       
+        ░░░░░░░░░░░░░░░     
+       ░░░░░░░░░░░░░░░░░    
+      ░░░░░░░░░░░░░░░░░░░   
+                            
+  ░░░░                      
+ ░░░░░░                ░░░  
+░░░░░░░░         ░░░░░░░░░  
+ ░░░░░░░░      ░░░░░░░░░░░  
+  ░░░░░░░░░  ░░░░░░░░░░░░   
+   ░░░░░░░░░░░░░░░░░░░░     
+                            
