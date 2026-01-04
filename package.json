@@ -7,12 +7,15 @@
   "scripts": {
     "dev": "bun run src/index.tsx",
     "start": "bun run src/index.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "logs": "tail -f debug.log",
+    "logs:clear": "rm -f debug.log && echo 'Debug log cleared'"
   },
   "license": "MIT",
   "dependencies": {
     "@opentui/core": "^0.1.68",
     "@opentui/react": "^0.1.68",
+    "@tanstack/react-query": "^5.90.16",
     "date-fns": "^4.1.0",
     "react": "^19.2.3",
     "react-reconciler": "^0.33.0",

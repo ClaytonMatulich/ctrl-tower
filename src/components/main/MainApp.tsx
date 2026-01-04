@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useKeyboard } from '@opentui/react';
+import { DeparturesBoard } from '../departures/DeparturesBoard';
 
 export function MainApp() {
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
-    { key: 'arrivals', label: 'ARRIVALS', shortcut: '1' },
-    { key: 'departures', label: 'DEPARTURES', shortcut: '2' },
+    { key: 'departures', label: 'DEPARTURES', shortcut: '1' },
+    { key: 'arrivals', label: 'ARRIVALS', shortcut: '2' },
     { key: 'map', label: 'LIVE MAP', shortcut: '3' },
     { key: 'help', label: 'HELP', shortcut: '4' },
   ];
@@ -62,44 +63,47 @@ export function MainApp() {
         </box>
       </box>
 
-      <box flexDirection="column" flexGrow={1} padding={1}>
+      <box flexDirection="column" flexGrow={1}>
         {activeTab === 0 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">ARRIVALS - SFO (San Francisco International)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading flight data...</text>
-            </box>
-          </box>
+          <DeparturesBoard />
         )}
         {activeTab === 1 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">DEPARTURES - SFO (San Francisco International)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading flight data...</text>
+          <box flexDirection="column" height="100%" padding={2}>
+            <box border borderStyle="single" borderColor="#FFA500" padding={1} height="100%">
+              <box flexDirection="column" alignItems="center" justifyContent="center" height="100%">
+                <text fg="#FFA500">ARRIVALS - Coming Soon</text>
+                <box marginTop={1}>
+                  <text fg="#996600">Arrivals board will be available in a future update</text>
+                </box>
+              </box>
             </box>
           </box>
         )}
         {activeTab === 2 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">LIVE MAP - Regional (300km radius from SFO)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading aircraft positions...</text>
+          <box flexDirection="column" height="100%" padding={2}>
+            <box border borderStyle="single" borderColor="#FFA500" padding={1} height="100%">
+              <box flexDirection="column" alignItems="center" justifyContent="center" height="100%">
+                <text fg="#FFA500">LIVE MAP - Coming Soon</text>
+                <box marginTop={1}>
+                  <text fg="#996600">Live aircraft map will be available in a future update</text>
+                </box>
+              </box>
             </box>
           </box>
         )}
         {activeTab === 3 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFD700">Keyboard Shortcuts</text>
-            <box marginTop={1} flexDirection="column">
-              <text fg="#FFA500">[Tab] Switch tabs forward</text>
-              <text fg="#FFA500">[Shift+Tab] Switch tabs backward</text>
-              <text fg="#FFA500">[1-4] Jump to tab</text>
-              <text fg="#FFA500">[↑/↓] Navigate within lists</text>
-              <text fg="#FFA500">[Enter] Select flight/aircraft</text>
-              <text fg="#FFA500">[Esc] Go back / close detail</text>
-              <text fg="#FFA500">[M] Toggle map mode</text>
-              <text fg="#FFA500">[R] Refresh data</text>
-              <text fg="#FFA500">[Q] Quit application</text>
+          <box flexDirection="column" height="100%" padding={2}>
+            <box border borderStyle="single" borderColor="#FFA500" padding={1}>
+              <box flexDirection="column" padding={1}>
+                <text fg="#FFD700">Keyboard Shortcuts</text>
+                <box marginTop={1} flexDirection="column">
+                  <text fg="#FFA500">[Tab] Switch tabs forward</text>
+                  <text fg="#FFA500">[1-4] Jump to specific tab</text>
+                  <text fg="#FFA500">[R] Refresh departures data</text>
+                  <text fg="#FFA500">[←][→] or [[ ]] Navigate pages</text>
+                  <text fg="#FFA500">[Q] Quit application</text>
+                </box>
+              </box>
             </box>
           </box>
         )}
@@ -112,7 +116,7 @@ export function MainApp() {
         paddingRight={1}
       >
         <text fg="#996600">
-          [R] Refresh  [Q] Quit  API: AirLabs (SFO)  OpenSky (0 aircraft)
+          [Tab] Switch Tabs  [1-4] Jump to Tab  [Q] Quit
         </text>
       </box>
     </box>

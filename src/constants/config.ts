@@ -79,6 +79,13 @@ export const config = {
     ttlSchedules: getEnvNumber('CACHE_TTL_SCHEDULES', 300), // 5 minutes
     ttlStatic: getEnvNumber('CACHE_TTL_STATIC', 86400), // 24 hours
   },
+
+  /**
+   * Display Configuration
+   */
+  display: {
+    flightsPerPage: 10, // Number of flights to show per page
+  },
 } as const;
 
 /**
