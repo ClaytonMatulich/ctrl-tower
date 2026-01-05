@@ -44,11 +44,11 @@ export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
   });
 
   // pagination
-  const totalFlights = flights?.length || 0;
-  const totalPages = Math.ceil(totalFlights / FLIGHTS_PER_PAGE);
+  const totalSchedules = flights?.length || 0;
+  const totalPages = Math.ceil(totalSchedules / FLIGHTS_PER_PAGE);
   const startIdx = currentPage * FLIGHTS_PER_PAGE;
   const endIdx = startIdx + FLIGHTS_PER_PAGE;
-  const currentFlights = flights?.slice(startIdx, endIdx) || [];
+  const currentSchedules = flights?.slice(startIdx, endIdx) || [];
 
   // reset page if out of bounds
   if (totalPages > 0 && currentPage >= totalPages) {
@@ -132,7 +132,7 @@ export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
     );
   }
 
-  if (totalFlights === 0) {
+  if (totalSchedules === 0) {
     return (
       <box flexDirection="column" height="100%" paddingTop={1} paddingLeft={1} paddingRight={1}>
         <box
@@ -192,10 +192,10 @@ export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
 
           {/* flight rows */}
           <box flexDirection="column">
-            {currentFlights.map((flight) => (
+            {currentSchedules.map((schedule) => (
               <DepartureRow
-                key={flight.id}
-                flight={flight}
+                key={`${schedule.flight_iata}-${schedule.dep_time_ts}`}
+                schedule={schedule}
                 airportCode={airportCode}
               />
             ))}

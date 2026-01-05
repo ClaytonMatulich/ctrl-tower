@@ -4,16 +4,16 @@
  * Displays a single flight departure row with fixed-width columns
  */
 
-import type { Flight } from "../../types/flight";
-import { formatLocalTime } from "../../utils/time";
+import type { AirLabsSchedule } from "../../types/api/airlabs";
+import { formatLocalTime, parseUTCTime } from "../../utils/time";
 import { colors, tableChars, columnWidths } from "../../styles/theme";
 
 interface DepartureRowProps {
-  flight: Flight;
+  schedule: AirLabsSchedule;
   airportCode: string;
 }
 
-function getStatusColor(status: Flight["status"]): string {
+function getStatusColor(status: AirLabsSchedule["status"]): string {
   switch (status) {
     case "cancelled":
       return colors.statusCancelled;
@@ -27,8 +27,8 @@ function getStatusColor(status: Flight["status"]): string {
   }
 }
 
-function formatStatus(flight: Flight): string {
-  switch (flight.status) {
+function formatStatus(schedule: AirLabsSchedule): string {
+  switch (schedule.status) {
     case "cancelled":
       return "CANCELLED";
     case "active":
@@ -41,32 +41,22 @@ function formatStatus(flight: Flight): string {
   }
 }
 
-// truncate string to max length, adding ellipsis if needed
-function truncate(str: string, maxLen: number): string {
-  if (str.length <= maxLen) return str;
-  return str.slice(0, maxLen - 1) + "…";
-}
-
-export function DepartureRow({ flight, airportCode }: DepartureRowProps) {
-  const timeStr = formatLocalTime(flight.scheduledTime, airportCode);
-  const statusColor = getStatusColor(flight.status);
-  const statusText = formatStatus(flight);
+export function DepartureRow({ schedule, airportCode }: DepartureRowProps) {
+  const scheduledTime = parseUTCTime(schedule.dep_time!);
+  const timeStr = formatLocalTime(scheduledTime, airportCode);
+  const statusColor = getStatusColor(schedule.status);
+  const statusText = formatStatus(schedule);
   const separator = tableChars.vertical;
 
-  // format destination: "LAX Los Angeles" or just code if name is too long
-  const destDisplay = flight.destination
-    ? truncate(`${flight.destinationCode} ${flight.destination}`, columnWidths.destination - 1)
-    : flight.destinationCode;
-
-  const gate = flight.gate || "─";
+  const gate = schedule.dep_gate || "─";
 
   return (
     <box flexDirection="row" height={1}>
       <text fg={colors.text} width={columnWidths.time}>{timeStr}</text>
       <text fg={colors.textMuted}>{separator}</text>
-      <text fg={colors.textBright} width={columnWidths.flight}>{flight.flightNumber}</text>
+      <text fg={colors.textBright} width={columnWidths.flight}>{schedule.flight_iata}</text>
       <text fg={colors.textMuted}>{separator}</text>
-      <text fg={colors.text} width={columnWidths.destination}>{destDisplay}</text>
+      <text fg={colors.text} width={columnWidths.destination}>{schedule.arr_iata}</text>
       <text fg={colors.textMuted}>{separator}</text>
       <text fg={colors.textDim} width={columnWidths.gate}>{gate}</text>
       <text fg={colors.textMuted}>{separator}</text>

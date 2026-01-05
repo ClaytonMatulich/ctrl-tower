@@ -10,15 +10,15 @@ import type {
   AirLabsSchedule,
   AirLabsSuggestResponse,
 } from "../types/api/airlabs";
-import type { Flight } from "../types/flight";
 import type { AirportSuggestion } from "../types/airport";
-import { parseUTCTime } from "../utils/time";
 import { logger } from "../utils/logger";
 
 /**
  * Fetch departures for a given airport
  */
-export async function fetchDepartures(airportCode: string): Promise<Flight[]> {
+export async function fetchDepartures(
+  airportCode: string
+): Promise<AirLabsSchedule[]> {
   const apiKey = config.api.airlabs.key;
 
   if (!apiKey) {
@@ -50,12 +50,14 @@ export async function fetchDepartures(airportCode: string): Promise<Flight[]> {
       `Fetched ${data.response.length} departures for ${airportCode}`
     );
 
-    const flights = data.response
-      .map(mapScheduleToFlight)
-      .filter((flight): flight is Flight => flight !== null);
+    // filter out invalid schedules
+    const validSchedules = data.response.filter(
+      (schedule) =>
+        schedule.flight_iata && schedule.arr_iata && schedule.dep_time
+    );
 
-    logger.debug(`Mapped to ${flights.length} valid flights`);
-    return flights;
+    logger.debug(`Filtered to ${validSchedules.length} valid schedules`);
+    return validSchedules;
   } catch (error) {
     logger.error(`Failed to fetch departures for ${airportCode}`, error);
     throw error;
@@ -135,32 +137,4 @@ export async function searchAirports(
     logger.error(`Failed to search airports for query "${query}"`, error);
     throw error;
   }
-}
-
-/**
- * Map AirLabs schedule to our Flight domain type
- */
-function mapScheduleToFlight(schedule: AirLabsSchedule): Flight | null {
-  if (!schedule.flight_iata || !schedule.arr_iata || !schedule.dep_time) {
-    return null;
-  }
-
-  const scheduledTime = parseUTCTime(schedule.dep_time);
-  const estimatedTime = schedule.dep_estimated
-    ? parseUTCTime(schedule.dep_estimated)
-    : null;
-
-  return {
-    id: `${schedule.flight_iata}-${schedule.dep_time_ts ?? Date.now()}`,
-    flightNumber: schedule.flight_iata,
-    airline: schedule.airline_iata ?? "Unknown",
-    destination: schedule.arr_iata,
-    destinationCode: schedule.arr_iata,
-    scheduledTime,
-    estimatedTime,
-    gate: schedule.dep_gate ?? null,
-    terminal: schedule.dep_terminal ?? null,
-    status: schedule.status,
-    delayMinutes: schedule.dep_delayed ?? null,
-  };
 }
