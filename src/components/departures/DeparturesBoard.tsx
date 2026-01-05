@@ -6,13 +6,26 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useKeyboard } from "@opentui/react";
+import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import { fetchDepartures } from "../../services/airlabs";
 import { DepartureRow } from "./DepartureRow";
 import { getCurrentLocalTime } from "../../utils/time";
 import { colors, tableChars, columnWidths } from "../../styles/theme";
 
-const FLIGHTS_PER_PAGE = 10;
+// fixed UI elements that take up vertical space
+const FIXED_ROWS = {
+  header: 1,        // main app header bar
+  tabBar: 1,        // tab navigation bar
+  footer: 2,        // footer with shortcuts
+  paddingTop: 1,    // departures board top padding
+  borderTop: 1,     // departures board border
+  tableHeader: 1,   // column headers
+  separator: 1,     // separator line under headers
+  pagination: 1,    // pagination indicator (when shown)
+  borderBottom: 1,  // departures board border
+};
+
+const TOTAL_FIXED_ROWS = Object.values(FIXED_ROWS).reduce((sum, val) => sum + val, 0);
 
 interface DeparturesBoardProps {
   airportCode: string;
@@ -36,6 +49,7 @@ function buildSeparatorLine(): string {
 
 export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const { height: terminalRows } = useTerminalDimensions();
 
   const {
     data: flights,
@@ -48,11 +62,15 @@ export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
     queryFn: () => fetchDepartures(airportCode),
   });
 
+  // calculate dynamic flights per page based on available terminal rows
+  const availableRows = Math.max(1, terminalRows - TOTAL_FIXED_ROWS);
+  const flightsPerPage = availableRows;
+
   // pagination
   const totalSchedules = flights?.length || 0;
-  const totalPages = Math.ceil(totalSchedules / FLIGHTS_PER_PAGE);
-  const startIdx = currentPage * FLIGHTS_PER_PAGE;
-  const endIdx = startIdx + FLIGHTS_PER_PAGE;
+  const totalPages = Math.ceil(totalSchedules / flightsPerPage);
+  const startIdx = currentPage * flightsPerPage;
+  const endIdx = startIdx + flightsPerPage;
   const currentSchedules = flights?.slice(startIdx, endIdx) || [];
 
   // reset page if out of bounds

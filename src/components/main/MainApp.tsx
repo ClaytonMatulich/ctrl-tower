@@ -72,15 +72,14 @@ export function MainApp({ airport, onChangeAirport }: MainAppProps) {
       <box
         height={1}
         flexDirection="row"
-        justifyContent="space-between"
+        justifyContent="center"
+        alignItems="center"
         paddingLeft={1}
         paddingRight={1}
       >
-        <text fg={colors.accent}>ctrl-tower</text>
         <text fg={colors.text}>
           {airport.code} │ {airport.name}
         </text>
-        <text fg={colors.textDim}>{timeStr}</text>
       </box>
 
       {/* tab bar */}
@@ -179,17 +178,9 @@ export function MainApp({ airport, onChangeAirport }: MainAppProps) {
       </box>
 
       {/* footer with contextual shortcuts */}
-      <box
-        height={2}
-        paddingLeft={1}
-        paddingRight={1}
-        borderColor={colors.border}
-        border={["top"]}
-      >
-        <text fg={colors.text}>
-          {tabShortcuts[currentTab.key]}
-        </text>
-      </box>
+      <text fg={colors.text}>
+        {tabShortcuts[currentTab.key]}
+      </text>
     </box>
   );
 }

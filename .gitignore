@@ -20,3 +20,4 @@ dist/
 *.log
 debug.log
 node_modules
+.cursor/
