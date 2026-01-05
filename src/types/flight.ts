@@ -1,56 +1,33 @@
 /**
  * Flight domain types
- * 
+ *
  * These types represent the core business domain for flights,
  * independent of any external API structure.
  */
 
-export type FlightStatus = 
-  | 'scheduled' 
-  | 'boarding' 
-  | 'departed' 
-  | 'active' 
-  | 'landed' 
-  | 'cancelled' 
-  | 'diverted';
+/**
+ * Core flight information for departures board
+ */
+export type Flight = {
+  id: string; // Unique identifier (flight_iata + dep_time_ts)
+  flightNumber: string; // e.g., "AA2421"
+  airline: string; // e.g., "AA"
+  destination: string; // e.g., "New York"
+  destinationCode: string; // e.g., "JFK"
+  scheduledTime: Date; // Scheduled departure time
+  estimatedTime: Date | null; // Estimated departure time (if available)
+  gate: string | null; // Gate number (e.g., "D11")
+  terminal: string | null; // Terminal (e.g., "2")
+  status: "scheduled" | "cancelled" | "active" | "landed" | null; // Current flight status
+  delayMinutes: number | null; // Minutes delayed (if applicable)
+};
 
-export interface Airline {
-  name: string;
-  iata: string;
-  icao: string;
-}
-
-export interface FlightLeg {
-  airport: string;
-  iata: string;
-  icao?: string;
-  terminal?: string;
-  gate?: string;
-  scheduledTime: Date;
-  estimatedTime?: Date;
-  actualTime?: Date;
-  delayed?: number; // minutes
-}
-
-export interface Flight {
-  id: string; // Unique identifier (combination of flight number + date)
-  flightNumber: string; // e.g., "2421"
-  flightIATA: string; // e.g., "AA2421"
-  flightICAO: string; // e.g., "AAL2421"
-  airline: Airline;
-  departure: FlightLeg;
-  arrival: FlightLeg;
-  status: FlightStatus;
-  aircraft?: {
-    registration?: string;
-    icao24?: string;
-    type?: string;
-  };
-}
-
-export interface Schedule {
-  flights: Flight[];
-  airport: string;
-  type: 'arrivals' | 'departures';
-  lastUpdated: Date;
-}
+/**
+ * Pagination info for flight lists
+ */
+export type FlightPagination = {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+};

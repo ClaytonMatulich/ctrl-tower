@@ -1,17 +1,16 @@
-import { useKeyboard } from '@opentui/react';
+import { useKeyboard } from "@opentui/react";
 
 interface TitleScreenProps {
   onComplete: () => void;
 }
 
 export function TitleScreen({ onComplete }: TitleScreenProps) {
-
   useKeyboard(
     () => {
       onComplete();
     },
-    { release: true },
-  )
+    { release: true }
+  );
 
   return (
     <box
@@ -34,10 +33,6 @@ export function TitleScreen({ onComplete }: TitleScreenProps) {
 
       <box marginTop={2}>
         <text fg="#FFD700">Press any key to continue...</text>
-      </box>
-
-      <box marginTop={4}>
-        <text fg="#FFA500">[Tab] Navigate  [1-4] Switch Tabs  [Q] Quit  [?] Help</text>
       </box>
     </box>
   );

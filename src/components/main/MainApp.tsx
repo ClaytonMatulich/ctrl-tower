@@ -1,35 +1,55 @@
-import { useState } from 'react';
-import { useKeyboard } from '@opentui/react';
+import { useState, useEffect } from "react";
+import { useKeyboard } from "@opentui/react";
+import { DeparturesBoard } from "../departures/DeparturesBoard";
+import type { SelectedAirport } from "../../types/airport";
 
-export function MainApp() {
+interface MainAppProps {
+  airport: SelectedAirport;
+  onChangeAirport: () => void;
+}
+
+export function MainApp({ airport, onChangeAirport }: MainAppProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const tabs = [
-    { key: 'arrivals', label: 'ARRIVALS', shortcut: '1' },
-    { key: 'departures', label: 'DEPARTURES', shortcut: '2' },
-    { key: 'map', label: 'LIVE MAP', shortcut: '3' },
-    { key: 'help', label: 'HELP', shortcut: '4' },
+    { key: "departures", label: "DEPARTURES", shortcut: "1" },
+    { key: "arrivals", label: "ARRIVALS", shortcut: "2" },
+    { key: "help", label: "HELP", shortcut: "3" },
   ];
 
+  // update time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useKeyboard((key) => {
-    if (key.name === 'tab') {
+    if (key.name === "tab") {
       setActiveTab((prev) => (prev + 1) % tabs.length);
-    } else if (key.name === '1') {
+    } else if (key.name === "1") {
       setActiveTab(0);
-    } else if (key.name === '2') {
+    } else if (key.name === "2") {
       setActiveTab(1);
-    } else if (key.name === '3') {
+    } else if (key.name === "3") {
       setActiveTab(2);
-    } else if (key.name === '4') {
-      setActiveTab(3);
+    } else if (key.name === "escape") {
+      onChangeAirport();
     }
   });
 
+  const timeStr = currentTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
   return (
-    <box
-      flexDirection="column"
-      height="100%"
-    >
+    <box flexDirection="column" height="100%">
+      {/* header */}
       <box
         height={3}
         border
@@ -39,80 +59,82 @@ export function MainApp() {
       >
         <box flexDirection="row" justifyContent="space-between">
           <text fg="#FFD700">Ctrl-Tower v0.1.0</text>
-          <text fg="#FFA500">SFO - San Francisco International</text>
-          <text fg="#CC7000">19:45:32 UTC</text>
+          <text fg="#FFA500">
+            {airport.code} - {airport.name}
+          </text>
+          <text fg="#CC7000">{timeStr} UTC</text>
         </box>
         <box flexDirection="row" marginTop={1}>
           {tabs.map((tab, i) => (
             <box key={tab.key} marginRight={2}>
-              <text fg={activeTab === i ? '#FFD700' : '#996600'}>
+              <text fg={activeTab === i ? "#FFD700" : "#996600"}>
                 [{tab.shortcut}]
               </text>
-              <text fg={activeTab === i ? '#FFD700' : '#996600'}>
-                {activeTab === i ? '◄ ' : ''}
+              <text fg={activeTab === i ? "#FFD700" : "#996600"}>
+                {activeTab === i ? "◄ " : " "}
               </text>
-              <text fg={activeTab === i ? '#FFD700' : '#996600'}>
+              <text fg={activeTab === i ? "#FFD700" : "#996600"}>
                 {tab.label}
               </text>
-              <text fg={activeTab === i ? '#FFD700' : '#996600'}>
-                {activeTab === i ? ' ►' : ''}
+              <text fg={activeTab === i ? "#FFD700" : "#996600"}>
+                {activeTab === i ? " ►" : ""}
               </text>
             </box>
           ))}
         </box>
       </box>
 
-      <box flexDirection="column" flexGrow={1} padding={1}>
-        {activeTab === 0 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">ARRIVALS - SFO (San Francisco International)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading flight data...</text>
-            </box>
-          </box>
-        )}
+      {/* content */}
+      <box flexDirection="column" flexGrow={1}>
+        {activeTab === 0 && <DeparturesBoard airportCode={airport.code} />}
         {activeTab === 1 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">DEPARTURES - SFO (San Francisco International)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading flight data...</text>
+          <box flexDirection="column" height="100%" padding={2}>
+            <box
+              border
+              borderStyle="single"
+              borderColor="#FFA500"
+              padding={1}
+              height="100%"
+            >
+              <box
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                height="100%"
+              >
+                <text fg="#FFA500">ARRIVALS - Coming Soon</text>
+                <box marginTop={1}>
+                  <text fg="#996600">
+                    Arrivals board will be available in a future update
+                  </text>
+                </box>
+              </box>
             </box>
           </box>
         )}
         {activeTab === 2 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFA500">LIVE MAP - Regional (300km radius from SFO)</text>
-            <box border marginTop={1} flexDirection="column">
-              <text fg="#996600">Loading aircraft positions...</text>
-            </box>
-          </box>
-        )}
-        {activeTab === 3 && (
-          <box flexDirection="column" height="100%">
-            <text fg="#FFD700">Keyboard Shortcuts</text>
-            <box marginTop={1} flexDirection="column">
-              <text fg="#FFA500">[Tab] Switch tabs forward</text>
-              <text fg="#FFA500">[Shift+Tab] Switch tabs backward</text>
-              <text fg="#FFA500">[1-4] Jump to tab</text>
-              <text fg="#FFA500">[↑/↓] Navigate within lists</text>
-              <text fg="#FFA500">[Enter] Select flight/aircraft</text>
-              <text fg="#FFA500">[Esc] Go back / close detail</text>
-              <text fg="#FFA500">[M] Toggle map mode</text>
-              <text fg="#FFA500">[R] Refresh data</text>
-              <text fg="#FFA500">[Q] Quit application</text>
+          <box flexDirection="column" height="100%" padding={2}>
+            <box border borderStyle="single" borderColor="#FFA500" padding={1}>
+              <box flexDirection="column" padding={1}>
+                <text fg="#FFD700">Keyboard Shortcuts</text>
+                <box marginTop={1} flexDirection="column">
+                  <text fg="#FFA500">[Tab] Switch tabs forward</text>
+                  <text fg="#FFA500">[1-3] Jump to specific tab</text>
+                  <text fg="#FFA500">[R] Refresh departures data</text>
+                  <text fg="#FFA500">[←][→] Navigate pages</text>
+                  <text fg="#FFA500">[Esc] Change airport</text>
+                  <text fg="#FFA500">[Q] Quit application</text>
+                </box>
+              </box>
             </box>
           </box>
         )}
       </box>
 
-      <box
-        height={2}
-        border
-        paddingLeft={1}
-        paddingRight={1}
-      >
+      {/* footer */}
+      <box height={2} border paddingLeft={1} paddingRight={1}>
         <text fg="#996600">
-          [R] Refresh  [Q] Quit  API: AirLabs (SFO)  OpenSky (0 aircraft)
+          [Tab] Switch Tabs  [1-3] Jump  [Esc] Change Airport  [Q] Quit
         </text>
       </box>
     </box>

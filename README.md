@@ -174,6 +174,35 @@ ctrl-tower/
 bun run type-check
 ```
 
+### Debugging & Logs
+
+The application writes debug logs to `debug.log` in the project root since console output is hidden by the TUI.
+
+**View logs in real-time:**
+
+```bash
+bun run logs
+```
+
+**Clear logs:**
+
+```bash
+bun run logs:clear
+```
+
+**Configure log level:**
+
+Set the `LOG_LEVEL` environment variable in your `.env` file:
+
+```bash
+LOG_LEVEL=DEBUG  # Options: DEBUG, INFO, WARN, ERROR (default: INFO)
+```
+
+- `DEBUG`: All messages including detailed API requests/responses
+- `INFO`: General application flow and events
+- `WARN`: Warning messages
+- `ERROR`: Error messages only
+
 ### Project Documentation
 
 See [SPEC.md](./SPEC.md) for the complete project specification, including:

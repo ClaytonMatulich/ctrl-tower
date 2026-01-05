@@ -1,30 +1,19 @@
 /**
- * Airport domain types
+ * Airport types for search and selection
  */
 
-export interface Airport {
+export interface AirportSuggestion {
+  iataCode: string;
+  icaoCode?: string;
   name: string;
-  iata: string;
-  icao: string;
-  city: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  timezone: string;
-  elevation?: number; // meters
+  city?: string;
+  countryCode: string;
 }
 
-export interface City {
+/**
+ * Selected airport for the app
+ */
+export interface SelectedAirport {
+  code: string;
   name: string;
-  iata: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  timezone: string;
-}
-
-export interface Country {
-  name: string;
-  iso2: string;
-  iso3: string;
 }
