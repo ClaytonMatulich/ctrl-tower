@@ -1,407 +1,344 @@
 # Ctrl-Tower Specification
 
-**Version:** 0.1.0 (MVP)  
-**Last Updated:** January 4, 2026  
-**Status:** Active Development
+**Version:** 0.1.0  
+**Last Updated:** January 4, 2026
 
-> **Living Document:** This specification serves as the single source of truth for the ctrl-tower MVP. All architectural decisions, technical requirements, and project goals are documented here.
-
----
-
-## Table of Contents
-
-1. [Project Overview](#1-project-overview)
-2. [Tech Stack](#2-tech-stack)
-3. [MVP Scope](#3-mvp-scope)
-4. [Architecture](#4-architecture)
-5. [API Integration](#5-api-integration)
-6. [Data Models](#6-data-models)
-7. [Configuration](#7-configuration)
-8. [Development Setup](#8-development-setup)
-9. [Future Enhancements](#9-future-enhancements)
+> A retro-style TUI for real-time flight departures with amber CRT aesthetics
 
 ---
 
-## 1. Project Overview
+## Overview
 
-### Vision
+**ctrl-tower** is a terminal user interface (TUI) application displaying real-time flight information. Inspired by classic airport departure boards and amber CRT monitors, it combines retro aesthetics with modern React architecture.
 
-**ctrl-tower** is a retro-style terminal user interface (TUI) application for viewing real-time flight departures. Inspired by classic split-flap airport departure boards and amber CRT monitors, it provides a beautiful terminal-based flight information display.
+### Design Philosophy
 
-### Core Objectives
-
-- **Retro Aesthetic:** Amber/orange CRT display with clean typography
-- **Real-Time Data:** Live flight departure information
-- **Simplicity:** Focused MVP with room to grow
-- **Type Safety:** Fully type-safe TypeScript codebase
-- **Performance:** Optimized for API usage and smooth rendering
-
-### Default Configuration
-
-- **Default Airport:** SFO (San Francisco International Airport)
-- **Time Display:** Local airport time (PST/PDT for SFO)
-- **Pagination:** 10 flights per page
+- **Visual Inspiration:** Classic split-flap boards, amber CRT terminals
+- **TUI Inspiration:** [lazygit](https://github.com/jesseduffield/lazygit), [opencode](https://github.com/opencode-ai/opencode)
+  - Clean bordered panels with titles
+  - Fixed-width columns with visual separators
+  - Minimal chrome, maximum information density
+  - Contextual help in footer
+- **Color Scheme:** Amber/orange tones (#FFA500) with dimmed secondary text
+- **Type Safety:** Strict TypeScript with Zod runtime validation
 
 ---
 
-## 2. Tech Stack
+## Tech Stack
 
-### Core Technologies
-
-| Technology                | Version | Purpose                   |
-| ------------------------- | ------- | ------------------------- |
-| **Bun**                   | 1.1.26+ | Runtime & package manager |
-| **TypeScript**            | 5.0+    | Type-safe development     |
-| **@opentui/react**        | 0.1.68+ | React reconciler for TUI  |
-| **@opentui/core**         | 0.1.68+ | Core TUI primitives       |
-| **React**                 | 19.2.3+ | UI framework              |
-| **@tanstack/react-query** | 5.90+   | Data fetching & caching   |
-| **Zod**                   | 4.3.4+  | Runtime type validation   |
+| Technology                | Purpose                        |
+| ------------------------- | ------------------------------ |
+| **Bun**                   | Runtime & package manager      |
+| **TypeScript**            | Type-safe development          |
+| **React** 19+             | UI framework                   |
+| **@opentui/react**        | React reconciler for terminals |
+| **@opentui/core**         | Terminal rendering primitives  |
+| **@tanstack/react-query** | Data fetching & caching        |
+| **Zod**                   | Runtime type validation        |
 
 ### Prerequisites
 
-- Zig compiler (required for building @opentui packages)
-- Bun installed globally
-- AirLabs API key (free tier: 10,000 requests/month)
-
-### Type Safety Philosophy
-
-- **Strict TypeScript:** All compiler strictness flags enabled
-- **Runtime Validation:** Zod schemas for API responses
-- **No `any` types:** Explicit types throughout
-- **Types over Interfaces:** Use `type` instead of `interface` for consistency
+- Zig compiler (for @opentui builds)
+- Bun runtime
+- AirLabs API key (free tier: 10k/month)
 
 ---
 
-## 3. MVP Scope
+## OpenTUI Components & Utilities
 
-### ✅ Completed Features
+### Built-in Components
 
-1. **Title Screen**
-   - ASCII art logo
-   - "Press any key to continue" interaction
-   - Retro amber/orange color scheme
+```tsx
+// layout containers
+<box />              // flexbox-based layout container
+<scrollbox />        // scrollable container with scrollbars
 
-### 🚧 Current Development
+// text & input
+<text />             // styled text with color/formatting
+<input />            // single-line text input
+<textarea />         // multi-line text input
+<ascii-font />       // ASCII art text in various fonts
 
-2. **Departures Board**
-   - Real-time flight departure information from SFO
-   - Display: Time, Flight Number, Destination, Gate, Status
-   - Manual refresh (R key) to conserve API calls
-   - Pagination: 10 flights per page with arrow key navigation
-   - Time filtering: Shows flights departing in next 12 hours
-   - Local time display (PST for SFO)
-   - Status color coding:
-     - Orange: Scheduled, Boarding, Departed
-     - Red: Delayed, Cancelled
+// interactive
+<select />           // list selection with keyboard nav
+<tab-select />       // tab-based navigation component
 
-### 🎯 MVP Success Criteria
+// formatting
+<b>, <i>, <u>        // text modifiers (bold, italic, underline)
+<strong>, <em>       // semantic text emphasis
+<br />               // line break
+```
 
-- Title screen transitions to main app
-- Departures board shows live SFO departures
-- Manual refresh updates data
-- Pagination works with keyboard shortcuts
-- Error handling for API failures
-- Clean, retro visual aesthetic
+### Common Props
+
+```tsx
+// flexbox layout (yoga-layout)
+flexDirection="row" | "column"
+justifyContent="flex-start" | "center" | "space-between" | ...
+alignItems="flex-start" | "center" | "stretch" | ...
+flexGrow={1}
+gap={1}
+
+// borders & styling
+border={true | ["top", "bottom", "left", "right"]}
+borderStyle="single" | "double" | "rounded" | "heavy"
+borderColor="#FFA500"
+title="Panel Title"
+titleAlignment="left" | "center" | "right"
+backgroundColor="#000"
+
+// spacing
+padding={1}
+paddingLeft={1} paddingRight={1} paddingTop={1} paddingBottom={1}
+margin={1}
+marginLeft={1} marginRight={1} marginTop={1} marginBottom={1}
+
+// dimensions
+width={80} | "100%"
+height={24} | "100%"
+
+// text styling
+fg="#FFA500"        // foreground color
+```
+
+### Hooks
+
+```tsx
+import { useKeyboard, useTerminalDimensions } from "@opentui/react";
+
+// keyboard input handling
+useKeyboard((key) => {
+  if (key.name === "escape") {
+    /* ... */
+  }
+});
+
+// terminal size
+const { width, height } = useTerminalDimensions();
+```
+
+### Key Event Properties
+
+```tsx
+key.name; // "escape", "return", "up", "down", "left", "right", "tab", etc.
+key.ctrl; // boolean
+key.shift; // boolean
+key.meta; // boolean
+key.sequence; // raw key sequence
+```
 
 ---
 
-## 4. Architecture
+## Features
 
-### High-Level Structure
+### Current (v0.1.0)
+
+- **Title Screen:** ASCII art logo, press any key to continue
+- **Airport Search:** Search and select airports
+- **Departures Board:** Real-time departures with fixed-width table
+  - Columns: Time, Flight, Destination, Gate, Status
+  - Manual refresh (R key)
+  - Pagination (10 flights/page)
+  - Status colors: scheduled, active, landed, cancelled
+- **Tab Navigation:** Departures / Arrivals / Help
+- **Clean UI:** Rounded borders, titled panels, contextual shortcuts
+
+---
+
+## Architecture
 
 ```
-ctrl-tower/
-├── src/
-│   ├── components/          # React components
-│   │   ├── title/          # Title screen
-│   │   ├── main/           # Main app wrapper
-│   │   └── departures/     # Departures board components
-│   ├── services/           # API clients
-│   │   └── airlabs.ts     # AirLabs API integration
-│   ├── types/              # TypeScript types
-│   │   ├── api/           # API response types (Zod schemas)
-│   │   └── flight.ts      # Domain types
-│   ├── utils/              # Utility functions
-│   │   └── time.ts        # Timezone & formatting utilities
-│   ├── constants/          # Configuration constants
-│   │   └── config.ts      # Environment-based config
-│   ├── app.tsx            # Root app component
-│   └── index.tsx          # Entry point
-├── .env                    # Environment variables (gitignored)
-├── .env.example            # Example environment file
-└── package.json
+src/
+├── components/
+│   ├── title/          # Title screen
+│   ├── airport/        # Airport search
+│   ├── main/           # Main app & tabs
+│   └── departures/     # Departures board & rows
+├── services/
+│   └── airlabs.ts      # AirLabs API client
+├── types/
+│   ├── api/            # Zod schemas for API validation
+│   ├── flight.ts       # Flight domain types
+│   └── airport.ts      # Airport types
+├── utils/
+│   ├── time.ts         # Timezone & formatting
+│   └── logger.ts       # Logging utility
+├── styles/
+│   └── theme.ts        # Colors, table chars, column widths
+└── constants/
+    └── config.ts       # Environment config
+```
+
+### Data Flow
+
+```
+AirLabs API → Zod Validation → Domain Types → TanStack Query Cache → React Components
 ```
 
 ### Design Principles
 
-1. **Component Isolation:** Each component is self-contained
-2. **Type Safety:** API boundary → Zod validation → Domain types
-3. **Data Flow:** TanStack Query handles fetching, caching, error states
-4. **No Auto-Refresh:** Manual refresh only to conserve API calls
-5. **OpenTUI Primitives:** Use built-in `<box>`, `<text>`, `<ascii-font>` components
-
-### Key Components
-
-**TitleScreen.tsx**
-
-- Displays logo and welcome message
-- Waits for any keypress
-- Transitions to MainApp
-
-**MainApp.tsx**
-
-- Tab navigation wrapper
-- Keyboard shortcut handling (1-4 for tabs, Tab to cycle)
-- Shows DeparturesBoard in tab 1
-
-**DeparturesBoard.tsx**
-
-- Uses TanStack Query to fetch departures
-- Manual refresh with R key
-- Pagination with arrow keys or [ ]
-- Loading, error, and empty states
-- Display flights in table format
-
-**DepartureRow.tsx**
-
-- Individual flight row display
-- Status color coding
-- Formatted time, destination, gate, status
+1. **Manual Refresh Only:** Conserve API calls (no auto-refetch)
+2. **Type Safety:** Zod at API boundary, strict TypeScript throughout
+3. **Component Isolation:** Self-contained, reusable components
+4. **Theme Constants:** Centralized colors, widths, characters in `theme.ts`
+5. **Fixed-Width Tables:** Use box widths, not string padding
 
 ---
 
-## 5. API Integration
+## API Integration
 
 ### AirLabs API
 
-**Endpoint Used:**
+**Endpoints:**
 
 ```
-GET https://airlabs.co/api/v9/schedules?dep_iata=SFO&api_key={key}
+Departures: GET /schedules?dep_iata={CODE}
+Arrivals:   GET /schedules?arr_iata={CODE}
+Search:     GET /suggest?q={QUERY}
 ```
 
-**Rate Limits:**
+**Rate Limits:** 10,000 requests/month (free tier)
 
-- Free tier: 10,000 requests/month
-- ~333 requests/day safely
-- Manual refresh strategy keeps usage low
+**Validation Flow:**
 
-**Response Validation:**
-
-- Zod schema: `AirLabsSchedulesResponseSchema`
-- Runtime type checking ensures data integrity
-- Graceful error handling for malformed responses
-
-**Data Mapping:**
-
-```
-AirLabs API Response → Zod Validation → Domain Flight Type
+```typescript
+API Response → Zod Schema → Type-safe Domain Model
 ```
 
 **Status Mapping:**
 
-- `scheduled` → scheduled (no delays)
-- `active` + close to departure → boarding
-- `active` + past departure → departed
-- `landed` → departed (for departures board)
-- `cancelled` → cancelled
-- Any with `dep_delayed > 0` → delayed
-
-**Time Handling:**
-
-- API returns UTC times
-- Convert to local airport timezone (PST/PDT for SFO)
-- Display in 24-hour format: "19:30"
-- Filter to next 12 hours from current time
+| API Status  | Display Status |
+| ----------- | -------------- |
+| `scheduled` | ON TIME        |
+| `active`    | DEPARTED       |
+| `landed`    | LANDED         |
+| `cancelled` | CANCELLED      |
 
 ---
 
-## 6. Data Models
+## Data Models
 
-### Domain Types (src/types/flight.ts)
+### Flight Type
 
 ```typescript
-// Core flight model
 type Flight = {
-  id: string; // Unique ID
-  flightNumber: string; // e.g., "AA2421"
-  airline: string; // IATA code
-  destination: string; // IATA code (for now)
-  destinationCode: string; // IATA code
-  scheduledTime: Date; // Scheduled departure
-  estimatedTime: Date | null; // Estimated departure
-  gate: string | null; // Gate number
-  terminal: string | null; // Terminal
-  status: "scheduled" | "cancelled" | "active" | "landed" | null; // Current status
-  delayMinutes: number | null; // Delay in minutes
+  id: string;
+  flightNumber: string;
+  airline: string;
+  destination: string;
+  destinationCode: string;
+  scheduledTime: Date;
+  estimatedTime: Date | null;
+  gate: string | null;
+  terminal: string | null;
+  status: "scheduled" | "cancelled" | "active" | "landed" | null;
+  delayMinutes: number | null;
 };
 ```
 
-### API Types (src/types/api/airlabs.ts)
+### API Validation (Zod)
 
-Zod schemas for runtime validation:
-
-- `AirLabsScheduleSchema` - Individual flight schedule
-- `AirLabsSchedulesResponseSchema` - Full API response
+- `AirLabsScheduleSchema` - Single flight
+- `AirLabsSchedulesResponseSchema` - Full response
+- `AirLabsAirportSuggestionSchema` - Airport search
 
 ---
 
-## 7. Configuration
+## Configuration
 
 ### Environment Variables
 
 ```bash
-# Required
 AIRLABS_API_KEY=your_api_key_here
-
-# Optional (defaults shown)
-DEFAULT_AIRPORT=SFO
 ```
 
-### Runtime Config (src/constants/config.ts)
+### Theme Constants (`src/styles/theme.ts`)
 
 ```typescript
-config = {
-  api: {
-    airlabs: {
-      baseUrl: "https://airlabs.co/api/v9",
-      key: process.env.AIRLABS_API_KEY,
-      timeout: 10000, // 10 seconds
-    },
-  },
-  airport: {
-    default: "SFO",
-  },
-  display: {
-    flightsPerPage: 10,
-  },
-};
+colors: {
+  primary, secondary, accent,
+  text, textDim, textBright, textMuted,
+  border, borderActive, borderFocused,
+  statusScheduled, statusActive, statusLanded, statusCancelled
+}
+
+tableChars: {
+  horizontal, vertical, topLeft, topRight, ...
+}
+
+columnWidths: {
+  time: 7, flight: 10, destination: 24, gate: 6, status: 12
+}
 ```
 
-### TanStack Query Config
+### Query Config
 
 ```typescript
-new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity, // Never auto-refetch
-      gcTime: 1000 * 60 * 10, // Cache 10 minutes
-      retry: 2, // Retry failed requests
-      refetchOnWindowFocus: false, // No auto-refetch
-      refetchOnReconnect: false, // No auto-refetch
-    },
-  },
-});
+staleTime: Infinity           // never auto-refetch
+gcTime: 10 minutes            // cache for 10min
+refetchOnWindowFocus: false   // manual refresh only
 ```
 
 ---
 
-## 8. Development Setup
+## Development
 
-### Installation
+### Setup
 
 ```bash
-# Clone repository
-git clone <repo-url>
-cd ctrl-tower
-
-# Install dependencies
 bun install
-
-# Create environment file
 cp .env.example .env
-# Edit .env and add your AIRLABS_API_KEY
-```
-
-### Running the App
-
-```bash
-# Development mode
+# Add AIRLABS_API_KEY to .env
 bun run dev
-
-# Build
-bun run build
-
-# Type check
-bun run type-check
 ```
 
 ### Keyboard Shortcuts
 
-**Title Screen:**
-
-- Any key: Continue to main app
-
-**Main App:**
-
-- `Tab`: Cycle through tabs
-- `1-4`: Jump to specific tab
-- `Q`: Quit application
-
-**Departures Board (Tab 1):**
-
-- `R`: Refresh flight data
-- `←` or `[`: Previous page
-- `→` or `]`: Next page
+| Key     | Action                    | Context        |
+| ------- | ------------------------- | -------------- |
+| Any key | Continue                  | Title screen   |
+| Tab     | Next tab                  | Main app       |
+| 1, 2, ? | Jump to tab               | Main app       |
+| R       | Refresh data              | Departures     |
+| ← / →   | Page navigation           | Departures     |
+| ↑ / ↓   | Navigate list             | Airport search |
+| Enter   | Select                    | Airport search |
+| Esc     | Back to airport selection | Main app       |
+| Q       | Quit                      | Anywhere       |
 
 ---
 
-## 9. Future Enhancements
+## Future Enhancements
 
-These features are **not** part of the MVP but are planned for future releases:
+### Planned Features
 
-### Phase 2: Arrivals
+- **Arrivals Board:** Mirror of departures using `/schedules?arr_iata=`
+- **Split-Flap Animation:** Mechanical board effect for updates
+- **CRT Effects:** Scan lines, glow, color themes (amber/green/white)
+- **Live Map:** OpenSky Network integration with ASCII world map
+- **Flight Details:** Expanded info panel for selected flights
+- **Search/Filter:** Text search within current flights
+- **Auto-Refresh:** Optional toggle for live updates
 
-- Arrivals board (nearly identical to departures)
-- Same pagination and refresh mechanics
-- Use `/schedules?arr_iata=SFO` endpoint
+### Technical Improvements
 
-### Phase 3: Enhanced Display
-
-- Airport name resolution (IATA → full name)
-- Split-flap mechanical board animations
-- CRT screen effects (scan lines, glow)
-- Color themes (amber, green, white)
-
-### Phase 4: Live Map
-
-- OpenSky Network API integration
-- Real-time aircraft positions
-- ASCII art world map visualization
-- Regional view (300km radius)
-- Aircraft tracking and selection
-
-### Phase 5: Advanced Features
-
-- Multiple airport support
-- Flight detail view (expanded info)
-- Search/filter flights
-- Auto-refresh option (toggle)
-- Historical data caching
-- Notifications for specific flights
-
-### Technical Debt to Address
-
-- Replace IATA codes with full airport names
-- Better error recovery strategies
-- Unit and integration tests
+- Full airport name resolution
+- Unit & integration tests
 - Performance profiling
-- Accessibility improvements
+- Better error recovery
 
 ---
 
-## Notes
+## Development Notes
 
-- Keep it simple! MVP first, then iterate
-- Manual refresh conserves API calls
-- Focus on solid foundation before adding features
-- Use OpenTUI primitives - no custom renderers needed
-- Type safety at API boundaries is critical
-- Clean separation: API types → Domain types
+- **Design First:** Use lazygit/opencode as UI references
+- **Manual Refresh:** Default to conserve API calls
+- **Type Safety:** Zod at boundaries, strict TypeScript everywhere
+- **Theme Constants:** Never hardcode colors or widths
+- **Fixed Widths:** Use `width={N}` props, not string padding
+- **Border Titles:** Use `title` prop instead of separate header text
+- **No Default Exports:** Named exports only
 
 ---
 
-**End of Specification**
-
-For questions or suggestions, open an issue or PR.
+**Questions?** Open an issue or PR.

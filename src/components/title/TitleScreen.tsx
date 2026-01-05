@@ -1,4 +1,5 @@
 import { useKeyboard } from "@opentui/react";
+import { colors } from "../../styles/theme";
 
 interface TitleScreenProps {
   onComplete: () => void;
@@ -19,20 +20,28 @@ export function TitleScreen({ onComplete }: TitleScreenProps) {
       alignItems="center"
       height="100%"
     >
-      <box border borderStyle="double" padding={1} borderColor="#FFA500">
+      <box
+        border
+        borderStyle="rounded"
+        paddingLeft={2}
+        paddingRight={2}
+        paddingTop={1}
+        paddingBottom={1}
+        borderColor={colors.border}
+      >
         <box flexDirection="column" alignItems="center">
-          <ascii-font text="CTRL-TOWER" font="block" color="#FFA500" />
-          <box marginTop={1} marginBottom={1}>
-            <text fg="#FFA500">FLIGHT INFORMATION SYSTEM</text>
+          <ascii-font text="CTRL-TOWER" font="block" color={colors.secondary} />
+          <box marginTop={1}>
+            <text fg={colors.textDim}>Flight Information System</text>
           </box>
-          <box paddingLeft={2} paddingRight={2}>
-            <text fg="#FFA500">Version 0.1.0</text>
+          <box marginTop={1}>
+            <text fg={colors.textMuted}>v0.1.0</text>
           </box>
         </box>
       </box>
 
       <box marginTop={2}>
-        <text fg="#FFD700">Press any key to continue...</text>
+        <text fg={colors.accent}>Press any key to continue</text>
       </box>
     </box>
   );
