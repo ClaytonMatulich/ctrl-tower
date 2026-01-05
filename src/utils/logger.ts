@@ -1,52 +1,59 @@
 /**
  * Logger utility for debugging in TUI environment
  * 
- * Writes logs to a file since console output is hidden by the TUI
+ * Writes logs to a file since console output is hidden by the TUI.
+ * Uses async file writes for better performance.
  */
 
-import { appendFileSync, writeFileSync } from 'fs';
-
 const LOG_FILE = 'debug.log';
+
+// log levels
+export enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+}
+
+// get configured log level from env, default to INFO
+const configuredLevel = (() => {
+  const envLevel = process.env.LOG_LEVEL?.toUpperCase();
+  switch (envLevel) {
+    case 'DEBUG': return LogLevel.DEBUG;
+    case 'INFO': return LogLevel.INFO;
+    case 'WARN': return LogLevel.WARN;
+    case 'ERROR': return LogLevel.ERROR;
+    default: return LogLevel.INFO;
+  }
+})();
+
 let isInitialized = false;
 
 /**
  * Initialize the debug logger
  * Clears any existing log file
  */
-function initLogger() {
+async function initLogger() {
   if (!isInitialized) {
     try {
-      writeFileSync(LOG_FILE, `=== Debug Log Started at ${new Date().toISOString()} ===\n\n`);
+      await Bun.write(LOG_FILE, `=== Debug Log Started at ${new Date().toISOString()} ===\n\n`);
       isInitialized = true;
     } catch (error) {
-      // Silently fail if we can't write logs
+      // silently fail if we can't write logs
     }
   }
 }
 
 /**
- * Log a debug message to file
+ * Write a log message to file
  */
-export function debug(...args: any[]) {
-  initLogger();
-  
-  const timestamp = new Date().toISOString();
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-  ).join(' ');
-  
-  try {
-    appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
-  } catch (error) {
-    // Silently fail
+async function writeLog(level: LogLevel, levelName: string, args: any[]) {
+  // skip if below configured level
+  if (level < configuredLevel) {
+    return;
   }
-}
 
-/**
- * Log an error to file
- */
-export function error(...args: any[]) {
-  initLogger();
+  await initLogger();
   
   const timestamp = new Date().toISOString();
   const message = args.map(arg => {
@@ -57,15 +64,57 @@ export function error(...args: any[]) {
   }).join(' ');
   
   try {
-    appendFileSync(LOG_FILE, `[${timestamp}] ERROR: ${message}\n`);
-  } catch (e) {
-    // Silently fail
+    const file = Bun.file(LOG_FILE);
+    const writer = file.writer();
+    writer.write(`[${timestamp}] ${levelName}: ${message}\n`);
+    await writer.end();
+  } catch (error) {
+    // silently fail
   }
+}
+
+/**
+ * Log a debug message to file
+ */
+export function debug(...args: any[]) {
+  writeLog(LogLevel.DEBUG, 'DEBUG', args);
+}
+
+/**
+ * Log an info message to file
+ */
+export function info(...args: any[]) {
+  writeLog(LogLevel.INFO, 'INFO', args);
+}
+
+/**
+ * Log a warning to file
+ */
+export function warn(...args: any[]) {
+  writeLog(LogLevel.WARN, 'WARN', args);
+}
+
+/**
+ * Log an error to file
+ */
+export function error(...args: any[]) {
+  writeLog(LogLevel.ERROR, 'ERROR', args);
 }
 
 /**
  * Log an object with a label
  */
 export function logObject(label: string, obj: any) {
-  debug(`${label}:`, JSON.stringify(obj, null, 2));
+  info(`${label}:`, obj);
 }
+
+/**
+ * Default logger instance
+ */
+export const logger = {
+  debug,
+  info,
+  warn,
+  error,
+  logObject,
+};

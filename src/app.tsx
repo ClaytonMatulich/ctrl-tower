@@ -1,31 +1,54 @@
-import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TitleScreen } from './components/title/TitleScreen';
-import { MainApp } from './components/main/MainApp';
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TitleScreen } from "./components/title/TitleScreen";
+import { AirportSearch } from "./components/airport/AirportSearch";
+import { MainApp } from "./components/main/MainApp";
+import type { SelectedAirport } from "./types/airport";
 
-// Create QueryClient instance
+// create QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: Infinity,          // Never auto-refetch (manual refresh only)
-      gcTime: 1000 * 60 * 10,       // Cache for 10 minutes
-      retry: 2,                      // Retry failed requests 2 times
-      refetchOnWindowFocus: false,   // No auto-refetch on window focus
-      refetchOnReconnect: false,     // No auto-refetch on reconnect
+      staleTime: Infinity,
+      gcTime: 1000 * 60 * 10,
+      retry: 2,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 });
 
-export function App() {
-  const [showTitle, setShowTitle] = useState(true);
+type AppScreen = "title" | "airport-search" | "main";
 
-  if (showTitle) {
-    return <TitleScreen onComplete={() => setShowTitle(false)} />;
+export function App() {
+  const [screen, setScreen] = useState<AppScreen>("title");
+  const [selectedAirport, setSelectedAirport] = useState<SelectedAirport | null>(null);
+
+  function handleTitleComplete() {
+    setScreen("airport-search");
+  }
+
+  function handleAirportSelect(airport: SelectedAirport) {
+    setSelectedAirport(airport);
+    setScreen("main");
+  }
+
+  function handleBackToSearch() {
+    setScreen("airport-search");
+  }
+
+  if (screen === "title") {
+    return <TitleScreen onComplete={handleTitleComplete} />;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MainApp />
+      {screen === "airport-search" && (
+        <AirportSearch onSelect={handleAirportSelect} />
+      )}
+      {screen === "main" && selectedAirport && (
+        <MainApp airport={selectedAirport} onChangeAirport={handleBackToSearch} />
+      )}
     </QueryClientProvider>
   );
 }
