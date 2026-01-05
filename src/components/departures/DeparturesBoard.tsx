@@ -21,12 +21,17 @@ interface DeparturesBoardProps {
 // build the table header separator line
 function buildSeparatorLine(): string {
   const { horizontal, cross } = tableChars;
-  const timeCol = horizontal.repeat(columnWidths.time);
-  const flightCol = horizontal.repeat(columnWidths.flight);
-  const destCol = horizontal.repeat(columnWidths.destination);
-  const gateCol = horizontal.repeat(columnWidths.gate);
-  const statusCol = horizontal.repeat(columnWidths.status);
-  return `${timeCol}${cross}${flightCol}${cross}${destCol}${cross}${gateCol}${cross}${statusCol}`;
+  const parts = [
+    horizontal.repeat(columnWidths.time),
+    horizontal.repeat(columnWidths.flight),
+    horizontal.repeat(columnWidths.destination),
+    horizontal.repeat(columnWidths.terminal),
+    horizontal.repeat(columnWidths.gate),
+    horizontal.repeat(columnWidths.arrivalTime),
+    horizontal.repeat(columnWidths.duration),
+    horizontal.repeat(columnWidths.status),
+  ];
+  return parts.join(cross);
 }
 
 export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
@@ -178,9 +183,15 @@ export function DeparturesBoard({ airportCode }: DeparturesBoardProps) {
             <text fg={colors.textMuted}>{separator}</text>
             <text fg={colors.textDim} width={columnWidths.flight}>FLIGHT</text>
             <text fg={colors.textMuted}>{separator}</text>
-            <text fg={colors.textDim} width={columnWidths.destination}>DESTINATION</text>
+            <text fg={colors.textDim} width={columnWidths.destination}>TO</text>
+            <text fg={colors.textMuted}>{separator}</text>
+            <text fg={colors.textDim} width={columnWidths.terminal}>TERM</text>
             <text fg={colors.textMuted}>{separator}</text>
             <text fg={colors.textDim} width={columnWidths.gate}>GATE</text>
+            <text fg={colors.textMuted}>{separator}</text>
+            <text fg={colors.textDim} width={columnWidths.arrivalTime}>ARR</text>
+            <text fg={colors.textMuted}>{separator}</text>
+            <text fg={colors.textDim} width={columnWidths.duration}>DUR</text>
             <text fg={colors.textMuted}>{separator}</text>
             <text fg={colors.textDim} width={columnWidths.status}>STATUS</text>
           </box>

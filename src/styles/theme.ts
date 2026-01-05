@@ -59,9 +59,12 @@ export const tableChars = {
 // column widths for departures table
 export const columnWidths = {
   time: 7,
-  flight: 10,
-  destination: 24,
-  gate: 6,
+  flight: 8,
+  destination: 10,
+  terminal: 5,
+  gate: 5,
+  arrivalTime: 7,
+  duration: 6,
   status: 12,
 } as const;
 

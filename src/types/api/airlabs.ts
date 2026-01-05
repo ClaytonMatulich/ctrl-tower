@@ -29,7 +29,16 @@ export interface AirLabsSchedule {
   // arrival
   arr_iata: string | null;
   arr_icao: string | null;
+  arr_terminal?: string | null;
+  arr_gate?: string | null;
   arr_time: string | null;
+  arr_time_ts?: number | null;
+  arr_estimated?: string | null;
+  arr_actual?: string | null;
+  arr_delayed?: number | null;
+
+  // flight details
+  duration?: number | null;
 
   // status
   status: "scheduled" | "active" | "landed" | "cancelled" | null;
