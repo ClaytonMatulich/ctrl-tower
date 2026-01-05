@@ -10,6 +10,7 @@ import { useDebouncedValue } from "@tanstack/react-pacer";
 import { useKeyboard } from "@opentui/react";
 import type { SelectOption } from "@opentui/core";
 import { searchAirports } from "../../services/airlabs";
+import { colors } from "../../styles/theme";
 import type { SelectedAirport } from "../../types/airport";
 import { logger } from "../../utils/logger";
 
@@ -33,7 +34,7 @@ export function AirportSearch({ onSelect }: AirportSearchProps) {
 
   // convert to SelectOption format
   const options: SelectOption[] = (suggestions || []).map((airport) => ({
-    name: `[${airport.iataCode}] ${airport.name}`,
+    name: `${airport.iataCode} │ ${airport.name}`,
     description: airport.city
       ? `${airport.city}, ${airport.countryCode}`
       : airport.countryCode,
@@ -84,23 +85,24 @@ export function AirportSearch({ onSelect }: AirportSearchProps) {
     >
       <box
         border
-        borderStyle="double"
-        borderColor="#FFA500"
-        padding={1}
+        borderStyle="rounded"
+        borderColor={colors.border}
+        paddingLeft={2}
+        paddingRight={2}
+        paddingTop={1}
+        paddingBottom={1}
         flexDirection="column"
-        width={80}
+        width={60}
+        title=" Select Airport "
+        titleAlignment="left"
       >
-        <box marginBottom={1}>
-          <text fg="#FFD700">
-            <strong>Search for an airport</strong>
-          </text>
-        </box>
-
         <box
           border
-          borderColor="#996600"
+          borderStyle="rounded"
+          borderColor={colors.textMuted}
           height={3}
           marginBottom={1}
+          paddingLeft={1}
         >
           <input
             placeholder="Type airport name or code..."
@@ -112,16 +114,17 @@ export function AirportSearch({ onSelect }: AirportSearchProps) {
 
         {isLoading && debouncedQuery.length >= 2 && (
           <box marginBottom={1}>
-            <text fg="#996600">Searching...</text>
+            <text fg={colors.textDim}>Searching...</text>
           </box>
         )}
 
         {showResults && (
           <box
             border
-            borderColor="#FFA500"
+            borderStyle="rounded"
+            borderColor={colors.border}
             flexDirection="column"
-            height={Math.min(options.length * 2 + 2, 14)}
+            height={Math.min(options.length + 2, 12)}
           >
             <select
               options={options}
@@ -130,13 +133,13 @@ export function AirportSearch({ onSelect }: AirportSearchProps) {
               flexGrow={1}
               width="100%"
               backgroundColor="transparent"
-              textColor="#FFA500"
-              focusedBackgroundColor="#1a1a2e"
-              focusedTextColor="#FFD700"
-              selectedBackgroundColor="#FFA500"
-              selectedTextColor="#000000"
-              descriptionColor="#996600"
-              selectedDescriptionColor="#1a1a2e"
+              textColor={colors.text}
+              focusedBackgroundColor={colors.backgroundHighlight}
+              focusedTextColor={colors.textBright}
+              selectedBackgroundColor={colors.secondary}
+              selectedTextColor={colors.background}
+              descriptionColor={colors.textMuted}
+              selectedDescriptionColor={colors.backgroundAlt}
               showDescription={false}
               wrapSelection={true}
             />
@@ -145,14 +148,14 @@ export function AirportSearch({ onSelect }: AirportSearchProps) {
 
         {!isLoading && debouncedQuery.length >= 2 && !hasResults && (
           <box>
-            <text fg="#996600">No airports found</text>
+            <text fg={colors.textMuted}>No airports found</text>
           </box>
         )}
       </box>
 
-      <box marginTop={2}>
-        <text fg="#996600">
-          [↑↓] Navigate  [Enter] Select  [Type] Search
+      <box marginTop={1}>
+        <text fg={colors.textMuted}>
+          [↑↓] Navigate  [Enter] Select
         </text>
       </box>
     </box>
